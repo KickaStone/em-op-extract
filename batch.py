@@ -53,7 +53,7 @@ def get_batch(dataset_path, dataset_file, batch_c, batch_size=1, wavenet=False, 
         wavenet_input, wavenet_target = get_normalized_data(filtered_trace)
 
         label = get_onehot(meta_trace_set[j]["op"])
-        print(f"input={wavenet_input}, target={wavenet_target}, label={label}")
+        # print(f"input={wavenet_input}, target={wavenet_target}, label={label}")
         batch_c.append((wavenet_input, wavenet_target, label))
 
         if len(batch_c) == batch_size:
