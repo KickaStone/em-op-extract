@@ -57,7 +57,8 @@ def get_batch(dataset_path, dataset_file, batch_c, batch_size=1, wavenet=False, 
         batch_c.append((wavenet_input, wavenet_target, label))
 
         if len(batch_c) == batch_size:
-            batch = np.array(batch_c)
+
+            batch = np.array(batch_c, dtype=list)  # must declear the dtype as list, or it will raise valueError
             np.random.shuffle(batch)
             yield batch
             batch_c.clear()

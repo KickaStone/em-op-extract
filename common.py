@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal
 import matplotlib.colors
-import cv2
+# import cv2
 from load import get_trace_set
 from matplotlib import collections as mc
 from preprocess import *
@@ -77,38 +77,38 @@ def plot_stft(Sxx, meta=None, norm=True, show=True):
         plt.show()
 
 
-def opencv_correlate(trace, template, window_limit=None, show_plot=True, method="norm_corr"):
-    h, w = template.shape
-    if method == "norm_corr":
-        res = cv2.matchTemplate(trace[:, 0:window_limit], template, cv2.TM_CCORR_NORMED)
-    else:
-        res = cv2.matchTemplate(trace[:, 0:window_limit], template, cv2.TM_SQDIFF_NORMED)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    if method == "norm_corr":
-        top_left = max_loc
-    else:
-        top_left = min_loc
-    bottom_right = (top_left[0] + w, top_left[1] + h)
+# def opencv_correlate(trace, template, window_limit=None, show_plot=True, method="norm_corr"):
+#     h, w = template.shape
+#     if method == "norm_corr":
+#         res = cv2.matchTemplate(trace[:, 0:window_limit], template, cv2.TM_CCORR_NORMED)
+#     else:
+#         res = cv2.matchTemplate(trace[:, 0:window_limit], template, cv2.TM_SQDIFF_NORMED)
+#     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+#     if method == "norm_corr":
+#         top_left = max_loc
+#     else:
+#         top_left = min_loc
+#     bottom_right = (top_left[0] + w, top_left[1] + h)
 
-    if show_plot:
-        trace[:, top_left[0]-1] = 1 / 1e8
-        trace[:, top_left[0]] = 1/1e8
-        trace[:, top_left[0]+1] = 1 / 1e8
-        trace[:, bottom_right[0]-1] = 1 / 1e8
-        trace[:, bottom_right[0]] = 1/1e8
-        trace[:, bottom_right[0]+1] = 1 / 1e8
+#     if show_plot:
+#         trace[:, top_left[0]-1] = 1 / 1e8
+#         trace[:, top_left[0]] = 1/1e8
+#         trace[:, top_left[0]+1] = 1 / 1e8
+#         trace[:, bottom_right[0]-1] = 1 / 1e8
+#         trace[:, bottom_right[0]] = 1/1e8
+#         trace[:, bottom_right[0]+1] = 1 / 1e8
 
-    """
-    n = matplotlib.colors.LogNorm(vmin=res.min(), vmax=res.max(), clip=False)
-    plt.imshow(np.array([res[0]]*500), norm=n)
-    plt.show()
-    """
+#     """
+#     n = matplotlib.colors.LogNorm(vmin=res.min(), vmax=res.max(), clip=False)
+#     plt.imshow(np.array([res[0]]*500), norm=n)
+#     plt.show()
+#     """
 
-    if show_plot:
-        n = matplotlib.colors.LogNorm(vmin=trace.min(), vmax=trace.max(), clip=False)
-        plt.imshow(trace, norm=n)
-        plt.show()
-    return res, top_left[0]
+#     if show_plot:
+#         n = matplotlib.colors.LogNorm(vmin=trace.min(), vmax=trace.max(), clip=False)
+#         plt.imshow(trace, norm=n)
+#         plt.show()
+#     return res, top_left[0]
 
 
 def get_onehot(op_name):
