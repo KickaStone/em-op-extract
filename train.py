@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from models import CNN_1d
+import datetime
 from torchsummary import summary
 
 def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
@@ -30,39 +31,46 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
     summary(model, (1, 131072))
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-6)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     
     batch_c = []  # Batch container
     for dataset_name in dataset_names:
         dataset_path = os.path.join(datasets_root, dataset_name)
         dataset_files = list(os.listdir(dataset_path))
-
+        cnt = 0
         for epoch in range(epochs):
             print(f"\n\nEpoch {epoch+1}/{epochs}")
             for i, dataset_file in enumerate(dataset_files):
                 if '_traces.npy' in dataset_file:
                     for batch in get_batch(dataset_path, dataset_file, batch_c, batch_size=20):
-                        # model.train_batch(batch)
+                        cnt += 1
+                        print(f"\n\nBatch {cnt}")
+
+
                         input, target, label = split_batch(batch)
-                        # print("Simulate training with input, target, label")
-                        # print('len(input)', len(input))
-                        # print('len(target)', len(target))
-                        # print('len(label)', len(label))
-                        # print(torch.tensor(input).shape)
-                        # print(torch.tensor(label).shape)
+                        # check if any nan in the input
+                        if np.isnan(input).any():
+                            print("nan in batch")
+                            continue
                         print('training...')
+                        
                         xs = torch.tensor(input).float().to(device)
                         ys = torch.tensor(label).float().to(device)
-                        # print('xs.shape', xs.shape)
-                        # print('ys.shape', ys.shape)
+
                         y_pred = model(xs)
-                        # print('y_pred.shape', y_pred.shape)
+
                         loss = criterion(y_pred, ys)
                         print('loss', loss.item())
 
                         optimizer.zero_grad()
                         loss.backward()
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
                         optimizer.step()
+
+        # saving model
+        time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        torch.save(model.state_dict(), f"models/{model_to_use}-{time}.pt") 
+
 
                         
 def split_batch(batch):
@@ -88,3 +96,4 @@ if model_to_use == "wavenet":
 # use_newaugment = args.use_newaugment
 
 train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=1)
+
