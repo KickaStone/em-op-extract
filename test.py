@@ -52,7 +52,7 @@ def test_datasets(dataset_names, with_bounds=False, argument=False):
 
     print(confustion_matrix)
 
-    labels = ["aes", "sha1prf", "hmacsha1", "des", "aes", "aes", "sha1", "sha1", "noise"]
+    labels = ["aes", "sha1prf", "hmacsha1", "des_openssl", "aes_openssl", "aes_tiny", "sha1", "sha1transform", "noise"]
     ConfusionMatrixDisplay(confustion_matrix, display_labels=labels).plot()
     plt.show()
 
