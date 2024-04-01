@@ -13,3 +13,8 @@ run `pip install -r requirements.txt`
 
 train `python train.py`
 
+## Result
+
+1. Result After training 1 epoch
+
+![](./figures/res01.png)
