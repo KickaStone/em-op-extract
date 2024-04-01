@@ -39,20 +39,18 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
         dataset_files = list(os.listdir(dataset_path))
         cnt = 0
         for epoch in range(epochs):
-            print(f"\n\nEpoch {epoch+1}/{epochs}")
             for i, dataset_file in enumerate(dataset_files):
                 if '_traces.npy' in dataset_file:
                     for batch in get_batch(dataset_path, dataset_file, batch_c, batch_size=20):
                         cnt += 1
-                        print(f"\n\nBatch {cnt}")
-
+                        # print(f"\n\nBatch {cnt}")
 
                         input, target, label = split_batch(batch)
                         # check if any nan in the input
                         if np.isnan(input).any():
-                            print("nan in batch")
+                            # print("nan in batch")
                             continue
-                        print('training...')
+                        # print('training...')
                         
                         xs = torch.tensor(input).float().to(device)
                         ys = torch.tensor(label).float().to(device)
@@ -60,16 +58,25 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
                         y_pred = model(xs)
 
                         loss = criterion(y_pred, ys)
-                        print('loss', loss.item())
+                        if cnt % 100 == 0:
+                            print(f'Epoch {epoch}, Batch {cnt}, Loss: {loss.item()}')
+                        # print('loss', loss.item())
 
                         optimizer.zero_grad()
                         loss.backward()
                         torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
                         optimizer.step()
 
+                        # save checkpoint
+                        if cnt % 1000 == 0:
+                            time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                            torch.save(model.state_dict(), f"models/{model_to_use}-{time}.pt")
+                            print(f"Model saved as {model_to_use}-{time}.pt")
+
         # saving model
         time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        torch.save(model.state_dict(), f"models/{model_to_use}-{time}.pt") 
+        torch.save(model.state_dict(), f"models/cnn1d.pt") 
+        print(f"Model saved")
 
 
                         
@@ -94,6 +101,6 @@ if model_to_use == "wavenet":
 # noise_snippets = snippetize(np.load("./datasets/nodemcu-fullconnect/2020-02-19_11-52-45_598201_traces.npy")[0], snippet_length=128)
 # noise_patch = filter_trace(noise_snippets, filter_method)
 # use_newaugment = args.use_newaugment
-
-train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=1)
+if '__main__' == __name__:
+    train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=1)
 
