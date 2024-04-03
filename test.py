@@ -6,7 +6,7 @@ import torch
 from batch import get_batch
 from train import split_batch
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score, precision_score, recall_score
 
 def test_datasets(dataset_names, with_bounds=False, argument=False):
     model = CNN_1d(input_size=131072, num_classes=9)
@@ -20,15 +20,21 @@ def test_datasets(dataset_names, with_bounds=False, argument=False):
     summary(model, (1, 131072))
 
     batch_c = []
-    confustion_matrix = np.zeros((9, 9)).astype(int)
 
     print('testing...')
 
+    # y_true = np.array([], dtype=int)
+    # y_pred = np.array([], dtype=int)
+
+    y_pred = []
+    y_true = []
+
+
     for dataset_name in dataset_names:
         dataset_path = os.path.join(datasets_root, dataset_name)
-        dataste_files = list(os.listdir(dataset_path))
+        dataset_files = list(os.listdir(dataset_path))
 
-        for i, dataset_file in enumerate(dataste_files):
+        for i, dataset_file in enumerate(dataset_files):
             if '_traces.npy' in dataset_file:
                 for batch in get_batch(dataset_path, dataset_file, batch_c, batch_size=20):
                     input, target, label = split_batch(batch)
@@ -40,23 +46,33 @@ def test_datasets(dataset_names, with_bounds=False, argument=False):
                     xs = torch.tensor(input).float().to(device)
                     ys = torch.tensor(label).float().to(device)
 
-                    y_pred = model(xs)
-                    assert(len(y_pred) == len(ys))
-                    
-                    pred_labels = torch.argmax(y_pred, dim=1)
-                    orig_labels = torch.argmax(ys, dim=1)
+                    y_out = model(xs).detach().cpu().numpy()
 
-                    for i in range(len(ys)):
-                        confustion_matrix[orig_labels[i]][pred_labels[i]] += 1
+                    y_true.extend(np.argmax(label, axis=1).tolist())
+                    y_pred.extend(np.argmax(y_out, axis=1).tolist())
+                    # y_true.append(np.argmax(label))
+                    # y_pred.append(np.argmax(y_out.cpu().detach().numpy()))
 
+                    # pred_labels = torch.argmax(y_pred, dim=1)
+                    # orig_labels = torch.argmax(ys, dim=1)
+    print('y_true[0:100]', y_true[0:100])
+    print('y_pred[0:100]', y_pred[0:100])
+    assert len(y_true) == len(y_pred)
 
-    print(confustion_matrix)
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred, average='micro')
+    recall = recall_score(y_true, y_pred, average='micro')
 
+    print(f'Accuracy: {accuracy:}')
+    print(f'Precision: {precision}')
+    print(f'Recall: {recall}')
+
+    conf_matrix = confusion_matrix(y_true, y_pred)
     labels = ["aes", "sha1prf", "hmacsha1", "des_openssl", "aes_openssl", "aes_tiny", "sha1", "sha1transform", "noise"]
-    ConfusionMatrixDisplay(confustion_matrix, display_labels=labels).plot()
+    cmp = ConfusionMatrixDisplay(conf_matrix, display_labels=labels)
+    _, ax = plt.subplots(figsize=(12, 12))
+    cmp.plot(ax=ax, cmap=plt.cm.Blues, xticks_rotation='vertical')
     plt.show()
-
-    
 
 if __name__ == '__main__':
     test_datasets(["nodemcu-random-test2"], with_bounds=False, argument=False)
