@@ -75,6 +75,9 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
 
         # saving model
         time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        # test if 'models' folder exist
+        if not os.path.exists('./models'):
+            os.mkdir('./models/')
         torch.save(model.state_dict(), f"models/cnn1d.pt") 
         print(f"Model saved")
 
@@ -102,5 +105,7 @@ if model_to_use == "wavenet":
 # noise_patch = filter_trace(noise_snippets, filter_method)
 # use_newaugment = args.use_newaugment
 if '__main__' == __name__:
+    if not os.path.exists('./models'):
+        os.mkdir('./models/')
     train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=1)
 
