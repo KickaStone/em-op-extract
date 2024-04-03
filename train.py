@@ -47,10 +47,10 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
 
                         input, target, label = split_batch(batch)
                         # check if any nan in the input
-                        if np.isnan(input).any():
-                            # print("nan in batch")
-                            continue
-                        # print('training...')
+                        # if np.isnan(input).any():
+                        #     # print("nan in batch")
+                        #     continue
+                        # # print('training...')
                         
                         xs = torch.tensor(input).float().to(device)
                         ys = torch.tensor(label).float().to(device)
@@ -70,7 +70,7 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
                         # save checkpoint
                         if cnt % 1000 == 0:
                             time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                            torch.save(model.state_dict(), f"models/{model_to_use}-{time}.pt")
+                            torch.save(model.state_dict(), f"models/{model_to_use}-{time}-batch{cnt}.pt")
                             print(f"Model saved as {model_to_use}-{time}.pt")
 
         # saving model
