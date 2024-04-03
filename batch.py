@@ -1,4 +1,7 @@
 import os
+
+import numpy as np
+
 from load import get_trace_set, load_meta
 from preprocess import pad_to_length
 from common import *
@@ -53,7 +56,9 @@ def get_batch(dataset_path, dataset_file, batch_c, batch_size=1, wavenet=False, 
         wavenet_input, wavenet_target = get_normalized_data(filtered_trace)
 
         label = get_onehot(meta_trace_set[j]["op"])
-        # print(f"input={wavenet_input}, target={wavenet_target}, label={label}")
+
+        if np.isnan(wavenet_input).any() or np.isnan(wavenet_target).any() or np.isnan(label).any():  # Skip the data which contains nan.
+            continue
         batch_c.append((wavenet_input, wavenet_target, label))
 
         if len(batch_c) == batch_size:
