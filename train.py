@@ -37,8 +37,8 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
     for dataset_name in dataset_names:
         dataset_path = os.path.join(datasets_root, dataset_name)
         dataset_files = list(os.listdir(dataset_path))
-        cnt = 0
         for epoch in range(epochs):
+            cnt = 0
             for i, dataset_file in enumerate(dataset_files):
                 if '_traces.npy' in dataset_file:
                     for batch in get_batch(dataset_path, dataset_file, batch_c, batch_size=20):
@@ -70,7 +70,7 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
                         # save checkpoint
                         if cnt % 1000 == 0:
                             time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                            torch.save(model.state_dict(), f"models/{model_to_use}-{time}-batch{cnt}.pt")
+                            torch.save(model.state_dict(), f"models/{model_to_use}-{time}--epoch-{epoch}-batch{cnt}.pt")
                             print(f"Model saved as {model_to_use}-{time}.pt")
 
         # saving model
@@ -107,5 +107,5 @@ if model_to_use == "wavenet":
 if '__main__' == __name__:
     if not os.path.exists('./models'):
         os.mkdir('./models/')
-    train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=1)
+    train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=2500)
 
