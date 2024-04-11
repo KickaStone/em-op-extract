@@ -14,7 +14,10 @@ def test_datasets(dataset_names, with_bounds=False, argument=False):
     datasets_root = "./datasets"
 
     # laod model
-    model.load_state_dict(torch.load('./models/cnn1d.pt'))
+    model_filename = input("Enter model path: ")
+    model.load_state_dict(torch.load(model_filename))
+
+    # model.load_state_dict(torch.load('models/best_cnn-2024-04-09_09-02-49--epoch-65-batch214000.pt'))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     summary(model, (1, 131072))
@@ -37,13 +40,13 @@ def test_datasets(dataset_names, with_bounds=False, argument=False):
         for i, dataset_file in enumerate(dataset_files):
             if '_traces.npy' in dataset_file:
                 for batch in get_batch(dataset_path, dataset_file, batch_c, batch_size=20):
-                    input, target, label = split_batch(batch)
+                    data, target, label = split_batch(batch)
 
-                    if np.isnan(input).any():
+                    if np.isnan(data).any():
                         print("nan in batch")
                         continue
 
-                    xs = torch.tensor(input).float().to(device)
+                    xs = torch.tensor(data).float().to(device)
                     ys = torch.tensor(label).float().to(device)
 
                     y_out = model(xs).detach().cpu().numpy()
