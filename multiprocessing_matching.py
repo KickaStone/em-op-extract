@@ -8,9 +8,11 @@ import numpy as np
 import scipy
 from matplotlib import pyplot as plt
 from common import fast_xcorr, pad_to_length
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay, confusion_matrix
+
 
 debug = False
-template_path = './arch'
+template_path = './archnotrigger'
 test_path = './datasets/nodemcu-random-test2'
 train_path = './datasets/nodemcu-random-train2'
 
@@ -21,21 +23,6 @@ def butter_filter(trace, order=1, cutoff=0.001, filter_type='low', fs=None):
     b, a = scipy.signal.butter(order, cutoff, btype=filter_type, fs=fs)
     trace_filtered = scipy.signal.filtfilt(b, a, trace)
     return trace_filtered
-
-
-def plot_trace(trace, title='Trace', xlabel='Time', ylabel='Amplitude'):
-    """
-    Plot trace
-    """
-    plt.style.use('_mpl-gallery')
-    x = np.linspace(0, len(trace), len(trace))
-    fig, ax = plt.subplots()
-    fig.set_figwidth(10)
-    fig.set_figheight(5)
-    ax.plot(x, trace, linewidth=2.0)
-    ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
-    plt.show()
-
 
 def get_opname(filename):
     """
@@ -57,12 +44,12 @@ def get_corr(trace, temp):
     return corr
 
 # load templates
-files = os.listdir('./arch')
+files = os.listdir(template_path)
 arch_templaes = {}
 for entry in files:
     if not entry.endswith('.npy'):
         continue
-    template = np.load(os.path.join('./arch', entry))
+    template = np.load(os.path.join(template_path, entry))
     op = get_opname(entry).replace('-', '_')
     arch_templaes[op] = template
 
@@ -109,9 +96,22 @@ for idx, entry in enumerate(test_traces):
         true_label.append(trace_op)
         pred_label.append(pred_op)
 
-    precentage = int((idx+1)/len(test_traces)*100)
+    percentage = (idx + 1) / len(test_traces) * 100
     sys.stdout.write('\r')
-    sys.stdout.write("[%-100s] %d%%" % ('='*int(precentage), precentage))
+    sys.stdout.write("[%-100s] %d%%" % ('=' * int(percentage), percentage))
     sys.stdout.flush()
 
 print('Test finished\n')
+
+
+assert(len(true_label) == len(pred_label))
+print(classification_report(true_label, pred_label))
+# Plot confusion matrix
+plt.style.use('default')
+fig, ax = plt.subplots()
+fig.set_figwidth(10)
+fig.set_figheight(10)
+cm = confusion_matrix(true_label, pred_label)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=arch_templaes.keys())
+disp.plot(ax=ax, values_format='d', cmap='Blues', xticks_rotation='vertical')
+plt.show()
