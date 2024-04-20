@@ -32,7 +32,7 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    
+
     batch_c = []  # Batch container
     for dataset_name in dataset_names:
         dataset_path = os.path.join(datasets_root, dataset_name)
@@ -67,11 +67,14 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
                         torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
                         optimizer.step()
 
-                        # save checkpoint
-                        if cnt % 1000 == 0:
-                            time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                            torch.save(model.state_dict(), f"models/{model_to_use}-{time}--epoch-{epoch}-batch{cnt}.pt")
-                            print(f"Model saved as {model_to_use}-{time}.pt")
+                        # # save checkpoint
+                        # if cnt % 1000 == 0:
+                        #     time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                        #     torch.save(model.state_dict(), f"models/{model_to_use}-{time}--epoch-{epoch}-batch{cnt}.pt")
+                        #     print(f"Model saved as {model_to_use}-{time}.pt")
+            # save every epoch
+            torch.save(model.state_dict(), f'models/{model_to_use}-epoch-{epoch}.pt')
+            print('Saved model to disk after epoch: ' + str(epoch))
 
         # saving model
         time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -82,7 +85,6 @@ def train_datasets(dataset_names, load=False, with_bounds=False, epochs=1):
         print(f"Model saved")
 
 
-                        
 def split_batch(batch):
     inputs = np.stack(batch[:, 0], axis=0)[:, :, None]
     targets = np.stack(batch[:, 1], axis=0)
@@ -107,5 +109,5 @@ if model_to_use == "wavenet":
 if '__main__' == __name__:
     if not os.path.exists('./models'):
         os.mkdir('./models/')
-    train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=2500)
+    train_datasets(['nodemcu-random-train2'], load=False, with_bounds=False, epochs=100)
 
